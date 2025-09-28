@@ -38,6 +38,7 @@ ui_*.h
 *~
 
 # Visual Studio files
+.vs/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
@@ -49,6 +50,20 @@ ui_*.h
 *.vcproj
 *.vsp
 *.psess
+*.ncb
+*.aps
+*.opt
+*.plg
+*.sdf
+*.opensdf
+*.db
+*.opendb
+*.VC.db
+*.VC.VC.opendb
+*.ipch
+*.ipdb
+*.pgc
+*.pgd
 
 # Build results
 [Dd]ebug/
