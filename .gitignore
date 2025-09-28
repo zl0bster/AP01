@@ -1,0 +1,173 @@
+# Qt-specific files
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.moc
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.exe
+*.app
+*.dmg
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Qt build directories
+build/
+build-*/
+debug/
+release/
+
+# MOC, UI, and RCC generated files
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+
+# Qt Creator files
+*.autosave
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+
+# Visual Studio files
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vcproj
+*.vsp
+*.psess
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.tlog
+*.lastbuildstate
+*.idb
+*.pdb
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# Audio files (generated/temporary)
+*.wav
+*.mp3
+*.flac
+*.aac
+*.ogg
+
+# Log files
+log_*.txt
+*.log
+
+# Configuration files with sensitive data (keep templates)
+# Uncomment if you want to ignore all config files:
+# *.ini
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# CMake (if used)
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Conan (if used)
+conanfile.txt
+conaninfo.txt
+conanbuildinfo.*
+
+# Libraries (keep source, ignore binaries)
+lib_*/libdspl.dll
+lib_*/libdspl.bin
+lib_*/libdspl.a
+lib_*/libdspl.exp
+lib_*/libdspl.def
+
+# Temporary directories
+tmp/
+temp/
+Userss00peAppDataLocalTemp*
+
+# Test results
+TestResults/
+
+# Coverage reports
+*.coverage
+*.coveragexml
+
+# Profiling data
+*.psess
+*.vsp
+*.vspx
+
+# Documentation build
+docs/html/
+docs/latex/
+
+# Package files
+*.zip
+*.tar.gz
+*.rar
+*.7z
