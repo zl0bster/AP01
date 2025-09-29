@@ -38,6 +38,7 @@ class SaveWAV : public QObject {
 public:
   explicit SaveWAV(QObject *parent = nullptr,
                    WavFileData const *data = nullptr);
+  virtual ~SaveWAV() = default;
   void setWAVData(WavFileData const *data = nullptr) { setMembers(data); };
 
 public slots:

@@ -35,7 +35,7 @@ class LinkerUDP : public QObject { ///   unlimited resend of nonapproved msgs
 public:
   explicit LinkerUDP(QObject *parent = nullptr,
                     QSharedPointer<ALinkData> ld = nullptr);
-  ~LinkerUDP();
+  virtual ~LinkerUDP();
   QDateTime lastMSGmoment() { return m_lastMSGmoment; }
   size_t errorMSGsCount() const {
     return msgLog.empty() ? 0 : msgLog.size();

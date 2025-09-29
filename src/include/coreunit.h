@@ -15,6 +15,7 @@ class CoreUnit : public QObject
     Q_OBJECT
 public:
     explicit CoreUnit(QObject *parent, QStringList args);
+    virtual ~CoreUnit() = default;
     virtual void initialize();
     void setUnit(ProtoUnit * p){m_unit=p;};
 protected:

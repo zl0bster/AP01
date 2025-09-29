@@ -27,7 +27,7 @@ class A_Recorder : public QObject {
 public:
   explicit A_Recorder(QObject *parent = nullptr,
                       A_Buffer *buffer_manager = nullptr);
-  ~A_Recorder();
+  virtual ~A_Recorder();
   // all next is prohibited when recording is started
   // and should be done BEFORE start recording
   bool setSampleRate(uint32_t newSampleRate);

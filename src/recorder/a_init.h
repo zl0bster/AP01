@@ -11,6 +11,7 @@ class A_Init : public QObject {
   Q_OBJECT
 public:
   explicit A_Init(QObject *parent = nullptr, QStringList args = {});
+  virtual ~A_Init() = default;
   void initialize();
   QSharedPointer<ALinkData> getLinkData() const {return p_linkData;}
   QSharedPointer<ARecData> getRecData() const {return p_recData;}

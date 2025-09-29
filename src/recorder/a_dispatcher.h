@@ -24,7 +24,7 @@ public:
                         QSharedPointer<ALinkData> ld = nullptr,
                         QSharedPointer<ARecData> rd = nullptr,
                         bool isPaused = false);
-  ~A_Dispatcher();
+  virtual ~A_Dispatcher();
   // int process();
 
 private:

@@ -13,6 +13,7 @@ class DispUnit : public QObject {
   Q_OBJECT
 public:
   explicit DispUnit(QObject *parent, QSharedPointer<ALinkData> ld);
+  virtual ~DispUnit() = default;
   void setLinkData(QSharedPointer<ALinkData> p) { p_linkData = p; }
 
 protected:
