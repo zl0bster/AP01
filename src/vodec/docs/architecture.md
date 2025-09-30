@@ -520,16 +520,16 @@ graph TD
     A --> C[Memory Usage]
     A --> D[I/O Operations]
     
-    B --> E[FFT Transformations<br/>O(n log n) per frame]
-    B --> F[Vocal Range Analysis<br/>O(n) per frame]
-    B --> G[Noise Model Updates<br/>O(n) per frame]
+    B --> E["FFT Transformations<br/>O(n log n) per frame"]
+    B --> F["Vocal Range Analysis<br/>O(n) per frame"]
+    B --> G["Noise Model Updates<br/>O(n) per frame"]
     
-    C --> H[TDBuffer: 2048 samples × 4 bytes]
-    C --> I[FDBuffer: 1024 complex × 128 frames]
-    C --> J[Artifact Buffer: 80 signatures]
+    C --> H["TDBuffer: 2048 samples × 4 bytes"]
+    C --> I["FDBuffer: 1024 complex × 128 frames"]
+    C --> J["Artifact Buffer: 80 signatures"]
     
-    D --> K[WAV File Loading<br/>Sequential read]
-    D --> L[Export File Writing<br/>Batch write]
+    D --> K["WAV File Loading<br/>Sequential read"]
+    D --> L["Export File Writing<br/>Batch write"]
     
     style E fill:#ffcdd2
     style F fill:#fff3e0
