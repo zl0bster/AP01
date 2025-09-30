@@ -177,12 +177,12 @@ sequenceDiagram
 ### Поток обработки сигналов
 
 ```mermaid
-flowchart TD
+graph TD
     A[WAV File Input] --> B[Load to TDBuffer]
-    B --> C[Set Window Parameters<br/>Size: 2048<br/>Hop: 1024]
+    B --> C["Set Window Parameters<br/>Size: 2048, Hop: 1024"]
     C --> D[Apply Hann Window]
-    D --> E[FFT Transform<br/>Frame Size: 1024]
-    E --> F[Copy to FDBuffer<br/>Ring Buffer: 128 frames]
+    D --> E["FFT Transform<br/>Frame Size: 1024"]
+    E --> F["Copy to FDBuffer<br/>Ring Buffer: 128 frames"]
     
     F --> G[VocalDetector Analysis]
     G --> H{Artifact Detected?}
@@ -216,7 +216,7 @@ flowchart TD
 ```mermaid
 graph TD
     A[Input: FD Frame] --> B[Calculate Magnitude Spectrum]
-    B --> C[Extract Vocal Range<br/>60-400 Hz]
+    B --> C["Extract Vocal Range<br/>60-400 Hz"]
     C --> D[Calculate Frame Power]
     D --> E[Calculate Vocal Range Power]
     
@@ -247,7 +247,7 @@ graph TD
 ### Алгоритм анализа артефактов
 
 ```mermaid
-stateDiagram-v2
+stateDiagram
     [*] --> Clear
     
     Clear --> Started : Magnitude & Probability OK
@@ -347,11 +347,11 @@ graph LR
         VD_INIT[VD_Init]
     end
     
-    CALLBACK <|.. VD_UNIT : implements
-    PROTO <|.. VD_UNIT : implements
-    INIT <|.. VD_INIT : implements
+    CALLBACK -.->|implements| VD_UNIT
+    PROTO -.->|implements| VD_UNIT
+    INIT -.->|implements| VD_INIT
     
-    VD_UNIT --> VD_INIT : uses
+    VD_UNIT -->|uses| VD_INIT
 ```
 
 ---
@@ -361,7 +361,7 @@ graph LR
 ### Механизм экспорта
 
 ```mermaid
-flowchart TD
+graph TD
     A[VD_VoiceDetector] --> B{m_export_data == true?}
     B -->|No| C[Skip Export]
     B -->|Yes| D[Export FDBuffer to CSV]
@@ -369,9 +369,9 @@ flowchart TD
     D --> E[Export SIGNATURE_T to CSV]
     E --> F[Export SIGNATURE_T to JSON]
     
-    D --> G[FDBuffer CSV Format:<br/>frame_id, freq_bin, magnitude_real, magnitude_imag]
-    E --> H[SIGNATURE_T CSV Format:<br/>frame_id, probability, frame_power, freq_hz, magnitude]
-    F --> I[SIGNATURE_T JSON Format:<br/>{"signatures": [{"frameID": ..., "probability": ..., "framePower": ..., "signature": [...]}]}]
+    D --> G["FDBuffer CSV Format:<br/>frame_id, freq_bin, magnitude_real, magnitude_imag"]
+    E --> H["SIGNATURE_T CSV Format:<br/>frame_id, probability, frame_power, freq_hz, magnitude"]
+    F --> I["SIGNATURE_T JSON Format:<br/>signatures array with frameID, probability, framePower, signature"]
     
     style B fill:#fff3e0
     style G fill:#e8f5e8
@@ -387,8 +387,8 @@ graph TB
         A[input_file.wav] --> B[input_file_fdbuffer.csv]
         A --> C[input_file_signatures.csv]
         A --> D[input_file_signatures.json]
-        A --> E[input_file_1.wav - detected artifact]
-        A --> F[input_file_2.wav - detected artifact]
+        A --> E["input_file_1.wav - detected artifact"]
+        A --> F["input_file_2.wav - detected artifact"]
     end
     
     subgraph "CSV FDBuffer Format"
@@ -400,7 +400,7 @@ graph TB
     end
     
     subgraph "JSON Signatures Format"
-        D --> I["{<br/>  \"signatures\": [<br/>    {\"frameID\": 0, \"probability\": 0.85, \"framePower\": 1234.5, \"signature\": [{\"freqHz\": 150.0, \"magn\": 567.8}]},<br/>    ...<br/>  ]<br/>}"]
+        D --> I["JSON format with signatures array<br/>containing frameID, probability,<br/>framePower, and signature data"]
     end
 ```
 
@@ -703,7 +703,7 @@ classDiagram
 ### Схема потоков данных
 
 ```mermaid
-flowchart LR
+graph LR
     subgraph "Input"
         A[WAV File]
         B[Configuration]
