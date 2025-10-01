@@ -364,14 +364,16 @@ graph LR
 graph TD
     A[VD_VoiceDetector] --> B{m_export_data == true?}
     B -->|No| C[Skip Export]
-    B -->|Yes| D[Export FDBuffer to CSV]
+    B -->|Yes| D[Export FDBuffer to NPY]
     
-    D --> E[Export SIGNATURE_T to CSV]
-    E --> F[Export SIGNATURE_T to JSON]
+    D --> E[Export FDBuffer to TIFF]
+    E --> F[Export SIGNATURE_T to NPY]
+    F --> G[Export SIGNATURE_T to TIFF]
     
-    D --> G["FDBuffer CSV Format:<br/>frame_id, freq_bin, magnitude_real, magnitude_imag"]
-    E --> H["SIGNATURE_T CSV Format:<br/>frame_id, probability, frame_power, freq_hz, magnitude"]
-    F --> I["SIGNATURE_T JSON Format:<br/>signatures array with frameID, probability, framePower, signature"]
+    D --> H["FDBuffer NPY Format:<br/>numpy array with frame_id, freq_bin, magnitude_real, magnitude_imag"]
+    E --> I["FDBuffer TIFF Format:<br/>image data with frequency domain visualization"]
+    F --> J["SIGNATURE_T NPY Format:<br/>numpy array with frame_id, probability, frame_power, freq_hz, magnitude"]
+    G --> K["SIGNATURE_T TIFF Format:<br/>image data with signatures visualization"]
     
     style B fill:#fff3e0
     style G fill:#e8f5e8
@@ -384,23 +386,28 @@ graph TD
 ```mermaid
 graph TB
     subgraph "Export Files Structure"
-        A[input_file.wav] --> B[input_file_fdbuffer.csv]
-        A --> C[input_file_signatures.csv]
-        A --> D[input_file_signatures.json]
-        A --> E["input_file_1.wav - detected artifact"]
-        A --> F["input_file_2.wav - detected artifact"]
+        A[input_file.wav] --> B[input_file_fdbuffer.npy]
+        A --> C[input_file_fdbuffer.tiff]
+        A --> D[input_file_signatures.npy]
+        A --> E[input_file_signatures.tiff]
+        A --> F["input_file_1.wav - detected artifact"]
+        A --> G["input_file_2.wav - detected artifact"]
     end
     
-    subgraph "CSV FDBuffer Format"
-        B --> G["frame_id, freq_bin, magnitude_real, magnitude_imag<br/>0, 0, 1.234, 0.567<br/>0, 1, 2.345, 1.234<br/>..."]
+    subgraph "NPY FDBuffer Format"
+        B --> H["numpy array with shape (frames, freq_bins, 2)<br/>containing frame_id, freq_bin, magnitude_real, magnitude_imag<br/>Data type: float32"]
     end
     
-    subgraph "CSV Signatures Format"
-        C --> H["frame_id, probability, frame_power, freq_hz, magnitude<br/>0, 0.85, 1234.5, 150.0, 567.8<br/>1, 0.92, 1345.6, 155.0, 589.1<br/>..."]
+    subgraph "TIFF FDBuffer Format"
+        C --> I["TIFF image with frequency domain visualization<br/>containing magnitude spectrum as image layers<br/>with time-frequency representation"]
     end
     
-    subgraph "JSON Signatures Format"
-        D --> I["JSON format with signatures array<br/>containing frameID, probability,<br/>framePower, and signature data"]
+    subgraph "NPY Signatures Format"
+        D --> J["numpy array with shape (signatures, 5)<br/>containing frame_id, probability, frame_power, freq_hz, magnitude<br/>Data type: float32"]
+    end
+    
+    subgraph "TIFF Signatures Format"
+        E --> K["TIFF image with signatures visualization<br/>containing frameID, probability,<br/>framePower, and signature data as image layers"]
     end
 ```
 
@@ -718,8 +725,10 @@ graph LR
     end
     
     subgraph "Export"
-        E --> I[CSV Export]
-        G --> J[JSON Export]
+        E --> I[NPY Export]
+        E --> J[TIFF Export]
+        G --> K[NPY Export]
+        G --> L[TIFF Export]
     end
     
     subgraph "Feedback"
