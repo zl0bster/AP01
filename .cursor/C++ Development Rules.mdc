@@ -6,6 +6,7 @@
     ## Code Style and Structure
     - Write concise, idiomatic C++ code with accurate examples.
     - Follow modern C++ conventions and best practices.
+    - Adhere to C++ Core Guidelines (https://isocpp.github.io/CppCoreGuidelines/) as much as possible, ensuring compatibility with project-specific requirements.
     - Use object-oriented, procedural, or functional programming patterns as appropriate.
     - Leverage STL and standard algorithms for collection operations.
     - Use descriptive variable and method names (e.g., 'isUserSignedIn', 'calculateTotal').
