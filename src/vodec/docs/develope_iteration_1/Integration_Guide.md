@@ -1,0 +1,280 @@
+# Инструкция по интеграции: Экспорт спектрограммы
+
+## 1. Подготовка зависимостей
+
+### Создание структуры папок
+```
+import/
+├── libnpy/
+│   └── npy.h
+└── tinytiff/
+    └── tinytiff.h
+
+src/vodec/
+└── spectrogram_exporter.h
+```
+
+### Загрузка библиотек
+
+#### libnpy (для NPY формата)
+```bash
+# Скачать npy.h из репозитория:
+# https://github.com/llohse/libnpy
+# Разместить в import/libnpy/npy.h
+```
+
+#### tinytiff (для TIFF формата)
+```bash
+# Скачать tinytiff.h из репозитория:
+# https://github.com/gegles/tinytiff
+# Разместить в import/tinytiff/tinytiff.h
+```
+
+### Проверка зависимостей
+- Убедиться, что файлы загружены корректно
+- Проверить совместимость с C++20
+- Убедиться в отсутствии дополнительных зависимостей
+
+## 2. Изменения в коде
+
+### Шаг 1: Создание SpectrogramExporter
+
+Создать файл `src/vodec/spectrogram_exporter.h`:
+
+```cpp
+#ifndef SPECTROGRAM_EXPORTER_H
+#define SPECTROGRAM_EXPORTER_H
+
+#ifdef DEBUG_SPECTROGRAM_SAVE
+#include <string>
+#include <vector>
+#include "../../import/libnpy/npy.h"
+#include "../../import/tinytiff/tinytiff.h"
+
+class SpectrogramExporter {
+private:
+    std::string m_outputDir;
+    bool m_enabled;
+    
+    std::string generateTimestamp();
+    std::vector<uint8_t> normalizeData(const std::vector<float>& data);
+    
+public:
+    SpectrogramExporter(const std::string& outputDir = ".");
+    void exportSpectrogram(const std::vector<float>& data, 
+                          size_t width, size_t height,
+                          const std::string& timestamp = "");
+    void setEnabled(bool enabled);
+    void setOutputDir(const std::string& dir);
+};
+
+#endif // DEBUG_SPECTROGRAM_SAVE
+#endif // SPECTROGRAM_EXPORTER_H
+```
+
+### Шаг 2: Реализация SpectrogramExporter
+
+Создать файл `src/vodec/spectrogram_exporter.cpp`:
+
+```cpp
+#ifdef DEBUG_SPECTROGRAM_SAVE
+#include "spectrogram_exporter.h"
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+#include <algorithm>
+
+SpectrogramExporter::SpectrogramExporter(const std::string& outputDir) 
+    : m_outputDir(outputDir), m_enabled(true) {
+}
+
+std::string SpectrogramExporter::generateTimestamp() {
+    auto now = std::chrono::system_clock::now();
+    auto time_t = std::chrono::system_clock::to_time_t(now);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now.time_since_epoch()) % 1000;
+    
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&time_t), "%Y%m%d_%H%M%S");
+    ss << "_" << std::setfill('0') << std::setw(3) << ms.count();
+    return ss.str();
+}
+
+std::vector<uint8_t> SpectrogramExporter::normalizeData(const std::vector<float>& data) {
+    if (data.empty()) return {};
+    
+    auto minmax = std::minmax_element(data.begin(), data.end());
+    float minVal = *minmax.first;
+    float maxVal = *minmax.second;
+    
+    std::vector<uint8_t> normalized(data.size());
+    for (size_t i = 0; i < data.size(); ++i) {
+        float normalized_val = (data[i] - minVal) / (maxVal - minVal);
+        normalized[i] = static_cast<uint8_t>(normalized_val * 255);
+    }
+    
+    return normalized;
+}
+
+void SpectrogramExporter::exportSpectrogram(const std::vector<float>& data,
+                                          size_t width, size_t height,
+                                          const std::string& timestamp) {
+    if (!m_enabled || data.empty()) return;
+    
+    std::string ts = timestamp.empty() ? generateTimestamp() : timestamp;
+    std::string baseName = m_outputDir + "/spectrogram_" + ts;
+    
+    try {
+        // Экспорт в NPY (сырые данные)
+        npy::save(baseName + ".npy", data, {height, width});
+        
+        // Экспорт в TIFF (нормализованные данные)
+        auto normalized = normalizeData(data);
+        tinytiff::write((baseName + ".tiff").c_str(), width, height, 
+                       normalized.data());
+                       
+        qInfo() << "Spectrogram exported:" << QString::fromStdString(baseName);
+    } catch (const std::exception& e) {
+        qWarning() << "Failed to export spectrogram:" << e.what();
+    }
+}
+
+void SpectrogramExporter::setEnabled(bool enabled) {
+    m_enabled = enabled;
+}
+
+void SpectrogramExporter::setOutputDir(const std::string& dir) {
+    m_outputDir = dir;
+}
+
+#endif // DEBUG_SPECTROGRAM_SAVE
+```
+
+### Шаг 3: Интеграция в VD_VoiceDetector
+
+В файле `src/vodec/vd_voicedetector.h`:
+
+```cpp
+// Добавить в private секцию
+#ifdef DEBUG_SPECTROGRAM_SAVE
+    #include "spectrogram_exporter.h"
+    SpectrogramExporter m_spectrogramExporter;
+#endif
+```
+
+В файле `src/vodec/vd_voicedetector.cpp`:
+
+```cpp
+// В конструкторе
+#ifdef DEBUG_SPECTROGRAM_SAVE
+    m_spectrogramExporter.setOutputDir(".");
+#endif
+
+// В методе обработки данных (после получения FDBuffer)
+#ifdef DEBUG_SPECTROGRAM_SAVE
+    if (m_export_data) {
+        // Преобразование FDBuffer в std::vector<float>
+        std::vector<float> spectrogramData;
+        // ... код преобразования данных ...
+        
+        m_spectrogramExporter.exportSpectrogram(spectrogramData, 
+                                               FDFrameSize, FDNumFramesInBuf);
+    }
+#endif
+```
+
+## 3. Настройка сборки
+
+### Изменения в vodec.pro
+
+```pro
+# Добавить в vodec.pro
+DEFINES += DEBUG_SPECTROGRAM_SAVE  # только для debug сборки
+
+# Добавить пути к заголовочным файлам
+INCLUDEPATH += ../../import/libnpy
+INCLUDEPATH += ../../import/tinytiff
+
+# Добавить исходные файлы
+SOURCES += spectrogram_exporter.cpp
+```
+
+### Условная компиляция
+
+Убедиться, что весь код экспорта обернут в:
+```cpp
+#ifdef DEBUG_SPECTROGRAM_SAVE
+    // код экспорта
+#endif
+```
+
+## 4. Конфигурация
+
+### Добавление в INI файл
+
+В секцию `[VoDec]` добавить:
+```ini
+[VoDec]
+# ... существующие параметры ...
+export_spectrogram = true
+spectrogram_output_dir = ./spectrograms
+```
+
+### Чтение конфигурации
+
+В `vd_init.cpp` добавить:
+```cpp
+#ifdef DEBUG_SPECTROGRAM_SAVE
+    bool exportSpectrogram = ini.getBool("VoDec", "export_spectrogram", false);
+    std::string outputDir = ini.getString("VoDec", "spectrogram_output_dir", ".");
+    
+    if (exportSpectrogram) {
+        m_voicedetector->setSpectrogramExport(true, outputDir);
+    }
+#endif
+```
+
+## 5. Проверка работоспособности
+
+### Шаг 1: Компиляция
+```bash
+cd src/vodec
+qmake vodec.pro
+make
+```
+
+### Шаг 2: Тестирование экспорта
+```bash
+# Запуск с тестовым файлом
+./vodec -t test_audio.wav
+
+# Проверка создания файлов
+ls -la spectrogram_*.npy spectrogram_*.tiff
+```
+
+### Шаг 3: Верификация данных
+
+#### Проверка NPY файла (Python)
+```python
+import numpy as np
+data = np.load('spectrogram_20241201_143022.npy')
+print(f"Shape: {data.shape}")
+print(f"Data type: {data.dtype}")
+print(f"Min/Max: {data.min()}/{data.max()}")
+```
+
+#### Проверка TIFF файла
+- Открыть в любом просмотрщике изображений
+- Убедиться в корректном отображении спектрограммы
+
+### Шаг 4: Проверка условной компиляции
+```bash
+# Сборка без флага DEBUG_SPECTROGRAM_SAVE
+# Убедиться, что код экспорта не включен в release сборку
+```
+
+---
+
+*Документ создан: [Дата]*
+*Версия: 1.0*
+*Статус: Черновик*
