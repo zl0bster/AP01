@@ -1,5 +1,11 @@
 # Инструкция по интеграции: Экспорт спектрограммы
 
+> **Связанные документы:**
+> - [Техническое задание](Technical_Specification.md) - требования и критерии приемки
+> - [Документ проектирования](Design_Document.md) - архитектура и принципы решения
+> - [План тестирования](Testing_Plan.md) - стратегия и процедуры тестирования
+> - [Архитектурное видение проекта](../../../docs/project_vision.md) - общий контекст системы AP01
+
 ## 1. Подготовка зависимостей
 
 ### Создание структуры папок
@@ -15,6 +21,8 @@ src/vodec/
 ```
 
 ### Загрузка библиотек
+
+Детальное обоснование выбора библиотек и критерии выбора описаны в [документе проектирования](Design_Document.md#2-выбор-библиотек).
 
 #### libnpy (для NPY формата)
 ```bash
@@ -54,18 +62,20 @@ src/vodec/
 class SpectrogramExporter {
 private:
     std::string m_outputDir;
+    std::string m_prefix;
     bool m_enabled;
     
     std::string generateTimestamp();
     std::vector<uint8_t> normalizeData(const std::vector<float>& data);
     
 public:
-    SpectrogramExporter(const std::string& outputDir = ".");
+    SpectrogramExporter(const std::string& outputDir = ".", const std::string& prefix = "spectrogram");
     void exportSpectrogram(const std::vector<float>& data, 
                           size_t width, size_t height,
                           const std::string& timestamp = "");
     void setEnabled(bool enabled);
     void setOutputDir(const std::string& dir);
+    void setPrefix(const std::string& prefix);
 };
 
 #endif // DEBUG_SPECTROGRAM_SAVE
@@ -84,8 +94,8 @@ public:
 #include <sstream>
 #include <algorithm>
 
-SpectrogramExporter::SpectrogramExporter(const std::string& outputDir) 
-    : m_outputDir(outputDir), m_enabled(true) {
+SpectrogramExporter::SpectrogramExporter(const std::string& outputDir, const std::string& prefix) 
+    : m_outputDir(outputDir), m_prefix(prefix), m_enabled(true) {
 }
 
 std::string SpectrogramExporter::generateTimestamp() {
@@ -122,7 +132,7 @@ void SpectrogramExporter::exportSpectrogram(const std::vector<float>& data,
     if (!m_enabled || data.empty()) return;
     
     std::string ts = timestamp.empty() ? generateTimestamp() : timestamp;
-    std::string baseName = m_outputDir + "/spectrogram_" + ts;
+    std::string baseName = m_outputDir + "/" + m_prefix + "_" + ts;
     
     try {
         // Экспорт в NPY (сырые данные)
@@ -145,6 +155,10 @@ void SpectrogramExporter::setEnabled(bool enabled) {
 
 void SpectrogramExporter::setOutputDir(const std::string& dir) {
     m_outputDir = dir;
+}
+
+void SpectrogramExporter::setPrefix(const std::string& prefix) {
+    m_prefix = prefix;
 }
 
 #endif // DEBUG_SPECTROGRAM_SAVE
@@ -235,6 +249,8 @@ spectrogram_output_dir = ./spectrograms
 ```
 
 ## 5. Проверка работоспособности
+
+> **Примечание:** Детальная стратегия тестирования и автоматизированные тесты описаны в [плане тестирования](Testing_Plan.md).
 
 ### Шаг 1: Компиляция
 ```bash
