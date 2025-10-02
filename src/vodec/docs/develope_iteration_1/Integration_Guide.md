@@ -70,9 +70,12 @@ private:
     
 public:
     SpectrogramExporter(const std::string& outputDir = ".", const std::string& prefix = "spectrogram");
-    void exportSpectrogram(const std::vector<float>& data, 
-                          size_t width, size_t height,
-                          const std::string& timestamp = "");
+    void exportToNPY(const std::vector<float>& data, 
+                     size_t width, size_t height,
+                     const std::string& timestamp = "");
+    void exportToTIFF(const std::vector<float>& data, 
+                      size_t width, size_t height,
+                      const std::string& timestamp = "");
     void setEnabled(bool enabled);
     void setOutputDir(const std::string& dir);
     void setPrefix(const std::string& prefix);
@@ -126,26 +129,38 @@ std::vector<uint8_t> SpectrogramExporter::normalizeData(const std::vector<float>
     return normalized;
 }
 
-void SpectrogramExporter::exportSpectrogram(const std::vector<float>& data,
-                                          size_t width, size_t height,
-                                          const std::string& timestamp) {
+void SpectrogramExporter::exportToNPY(const std::vector<float>& data,
+                                       size_t width, size_t height,
+                                       const std::string& timestamp) {
     if (!m_enabled || data.empty()) return;
     
     std::string ts = timestamp.empty() ? generateTimestamp() : timestamp;
-    std::string baseName = m_outputDir + "/" + m_prefix + "_" + ts;
+    std::string fileName = m_outputDir + "/" + m_prefix + "_" + ts + ".npy";
     
     try {
         // Экспорт в NPY (сырые данные)
-        npy::save(baseName + ".npy", data, {height, width});
-        
+        npy::save(fileName, data, {height, width});
+        qInfo() << "Spectrogram NPY exported:" << QString::fromStdString(fileName);
+    } catch (const std::exception& e) {
+        qWarning() << "Failed to export NPY:" << e.what();
+    }
+}
+
+void SpectrogramExporter::exportToTIFF(const std::vector<float>& data,
+                                       size_t width, size_t height,
+                                       const std::string& timestamp) {
+    if (!m_enabled || data.empty()) return;
+    
+    std::string ts = timestamp.empty() ? generateTimestamp() : timestamp;
+    std::string fileName = m_outputDir + "/" + m_prefix + "_" + ts + ".tiff";
+    
+    try {
         // Экспорт в TIFF (нормализованные данные)
         auto normalized = normalizeData(data);
-        tinytiff::write((baseName + ".tiff").c_str(), width, height, 
-                       normalized.data());
-                       
-        qInfo() << "Spectrogram exported:" << QString::fromStdString(baseName);
+        tinytiff::write(fileName.c_str(), width, height, normalized.data());
+        qInfo() << "Spectrogram TIFF exported:" << QString::fromStdString(fileName);
     } catch (const std::exception& e) {
-        qWarning() << "Failed to export spectrogram:" << e.what();
+        qWarning() << "Failed to export TIFF:" << e.what();
     }
 }
 
@@ -191,8 +206,13 @@ void SpectrogramExporter::setPrefix(const std::string& prefix) {
         std::vector<float> spectrogramData;
         // ... код преобразования данных ...
         
-        m_spectrogramExporter.exportSpectrogram(spectrogramData, 
-                                               FDFrameSize, FDNumFramesInBuf);
+        std::string timestamp = generateTimestamp();
+        m_spectrogramExporter.exportToNPY(spectrogramData, 
+                                         FDFrameSize, FDNumFramesInBuf, 
+                                         timestamp);
+        m_spectrogramExporter.exportToTIFF(spectrogramData, 
+                                          FDFrameSize, FDNumFramesInBuf, 
+                                          timestamp);
     }
 #endif
 ```

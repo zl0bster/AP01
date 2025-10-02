@@ -65,7 +65,8 @@ private:
     
 public:
     SpectrogramExporter(const std::string& outputDir = ".", const std::string& prefix = "spectrogram");
-    void exportSpectrogram(const FDBuffer& data, const std::string& timestamp);
+    void exportToNPY(const FDBuffer& data, const std::string& timestamp);
+    void exportToTIFF(const FDBuffer& data, const std::string& timestamp);
     void setEnabled(bool enabled);
     void setPrefix(const std::string& prefix);
 };
@@ -92,10 +93,13 @@ namespace SpectrogramExport {
 ```
 1. Получение данных FDBuffer из VD_VoiceDetector
 2. Генерация уникального timestamp
-3. Нормализация данных для TIFF (0-255)
-4. Сохранение в NPY (сырые данные)
-5. Сохранение в TIFF (нормализованные данные)
-6. Обработка ошибок записи
+3. Вызов exportToNPY():
+   - Сохранение сырых данных в NPY формат
+   - Обработка ошибок записи
+4. Вызов exportToTIFF():
+   - Нормализация данных для TIFF (0-255)
+   - Сохранение нормализованных данных в TIFF формат
+   - Обработка ошибок записи
 ```
 
 ### Нормализация данных
@@ -129,7 +133,9 @@ uint8_t normalizeToUint8(float value, float min, float max) {
 // В VD_VoiceDetector::processFrame()
 #ifdef DEBUG_SPECTROGRAM_SAVE
     if (m_export_data) {
-        m_spectrogramExporter.exportSpectrogram(fdBuffer, generateTimestamp());
+        std::string timestamp = generateTimestamp();
+        m_spectrogramExporter.exportToNPY(fdBuffer, timestamp);
+        m_spectrogramExporter.exportToTIFF(fdBuffer, timestamp);
     }
 #endif
 ```
